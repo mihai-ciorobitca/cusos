@@ -102,13 +102,13 @@ function GoogleReviewsSlider({ placeId }) {
         "section",
         { className: "px-4 sm:px-6 lg:px-12 py-16" }, // padding lateral pentru margini vizibile
         React.createElement(
+            "h2",
+            { className: "ff-title text-5xl text-center mb-8 text-red-600" },
+            "Recenzii"
+        ),
+        React.createElement(
             "div",
             { className: "max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl p-10" }, // card mare, centrat
-            React.createElement(
-                "h2",
-                { className: "ff-title text-4xl text-red-600 text-center mb-12" },
-                "Recenzii"
-            ),
             React.createElement(
                 "div",
                 { className: "text-center" },
