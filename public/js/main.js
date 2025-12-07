@@ -1,5 +1,6 @@
 
-const { Fragment, useState } = React;
+const { Fragment, useState, useEffect } = React;
+
 
 // ZONA DE JOACĂ (sus) – SLIDESHOW
 function PlayZone() {
@@ -63,6 +64,89 @@ function PlayZone() {
     );
 }
 
+function GoogleReviewsSlider({ placeId }) {
+    const [reviews, setReviews] = React.useState([]);
+    const [currentIndex, setCurrentIndex] = React.useState(0);
+
+    React.useEffect(() => {
+        const map = new google.maps.Map(document.createElement("div"));
+        const service = new google.maps.places.PlacesService(map);
+
+        service.getDetails(
+            {
+                placeId: placeId,
+                fields: ["name", "rating", "reviews", "user_ratings_total", "url"]
+            },
+            (place, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    const fiveStarReviews = place.reviews.filter(r => r.rating >= 3);
+                    setReviews(fiveStarReviews);
+                }
+            }
+        );
+    }, [placeId]);
+
+    React.useEffect(() => {
+        if (!reviews.length) return;
+        const interval = setInterval(() => {
+            setCurrentIndex(prev => (prev + 1) % reviews.length);
+        }, 4000);
+        return () => clearInterval(interval);
+    }, [reviews]);
+
+    if (!reviews.length) return null;
+
+    const currentReview = reviews[currentIndex];
+
+    return React.createElement(
+        "section",
+        { className: "px-4 sm:px-6 lg:px-12 py-16" }, // padding lateral pentru margini vizibile
+        React.createElement(
+            "div",
+            { className: "max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl p-10" }, // card mare, centrat
+            React.createElement(
+                "h2",
+                { className: "ff-title text-4xl text-red-600 text-center mb-12" },
+                "Recenzii Clienți"
+            ),
+            React.createElement(
+                "div",
+                { className: "text-center" },
+                React.createElement(
+                    "p",
+                    { className: "text-gray-700 text-xl mb-4 font-semibold" },
+                    currentReview.author_name
+                ),
+                React.createElement(
+                    "div",
+                    { className: "flex justify-center mb-4" },
+                    Array.from({ length: currentReview.rating }, (_, i) =>
+                        React.createElement("span", {
+                            key: i,
+                            className: "text-yellow-400 text-2xl",
+                            dangerouslySetInnerHTML: { __html: "&#9733;" } // ★
+                        })
+                    )
+                ),
+                React.createElement(
+                    "p",
+                    { className: "text-gray-700 italic mb-4 leading-relaxed break-words text-lg" },
+                    currentReview.text
+                ),
+                React.createElement(
+                    "span",
+                    { className: "text-gray-400 text-sm block mb-4" },
+                    `acum ${Math.floor((Date.now() - new Date(currentReview.time * 1000)) / (1000 * 60 * 60 * 24))} zile`
+                ),
+                React.createElement(
+                    "p",
+                    { className: "text-gray-400 text-xs text-center" },
+                    "Powered by Google"
+                )
+            )
+        )
+    );
+}
 
 function App() {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -225,6 +309,9 @@ function App() {
         ),
 
 
+        // Reviews
+        React.createElement(GoogleReviewsSlider, { placeId: "ChIJsfm07DlHNUcRX5dRXMY4WZU" }),
+
         // FOOTER
         React.createElement("footer", { className: "bg-gray-800 text-white py-12" },
             React.createElement("div", { className: "max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8" },
@@ -262,7 +349,6 @@ function App() {
                 "© 2025 CuSos. Toate drepturile rezervate."
             )
         ),
-
 
         // MODAL HAMBURGER
         menuOpen && React.createElement("div", { className: "fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col justify-center items-center gap-8 p-6" },
